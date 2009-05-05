@@ -41,15 +41,89 @@ e820ok:
 	or		eax,11h
 	mov		cr0,eax
 
-	jmp 0x20:jumpety
+	jmp		code_selector:jumpety
 
 jumpety:
 
+	mov		ax,stack_selector
+	mov 	ss,ax
+	mov		ax,data_selector
+	mov		ds,ax
+	mov		es,ax
+
+;Zero all tables
+	cld
+	mov		edi,pml4_base
+	mov		ecx,4*1024
+	xor		eax,eax
+	rep		stosd
+
+;PML4 table
+	mov		[pml4_base+4],  eax
+	mov		[pml4_base],    0x9C001
+
+;PDP table
+	mov		[pdpt_base+4],  eax
+	mov		[pdpt_base],    0x9D001
+
+;PD table
+	mov		[pd_base+4],    eax
+	mov		[pd_base],      0x9E001
+
+;Generate page table
 	
+	;eax zero from before
+	mov		edx,0x1 	;lower dword flags n stuff
+	mov		edi,pagetbl_base
+	
+.pt_loop:
+	mov		[edi],edx
+	mov		[edi+4],eax
+	add		edx,0x1000
+	add		edi,8
+	cmp		edi,0x9F000
+	jne		.pt_loop
+
+	;Enable PAE
+	mov		eax,cr4
+	bts		eax,5
+	mov		cr4,eax
+
+	;Load PML4 address
+	mov		eax,pml4_base
+	mov		cr3,eax
+
+	;Set EFER.LME
+	mov		ecx,0xC0000080
+	rdmsr
+	bts		eax,8
+	wrmsr
+	
+	;Set CR0.PE, thus entering Long mode
+	mov		eax,cr0
+	bts		eax,31
+	mov		cr0,eax
+
+	jmp		code_selector:long_mode
+
+[BITS 64]
+long_mode:
+
+	;stack setup
+	mov 	rsp,stack64_base
+
+	;tss setup
+	mov		ax,tss_selector
+	ltr		ax
+
+	;LET'S DO THIS THING!
+
+.stop
+	jmp .stop
 
 boot_error:
-		mov si, boot_error_msg
-		call print_msg
+	mov		si, boot_error_msg
+	call	print_msg
 
 .stop
 	cli 
@@ -191,6 +265,8 @@ enable_a20:
 	
 	ret
 
+
+;retrieves map of physical memory
 get_e820:
 
 	push	ebx
@@ -248,6 +324,23 @@ get_e820:
 	ret
 
 
+;EQU -------------------------
+
+stack64_base	equ		0x9B000
+
+pml4_base		equ		0x9B000
+pdpt_base		equ		0x9C000
+pd_base			equ		0x9D000
+pagetbl_base	equ		0x9E000
+
+gdt_base		equ		0x9F000
+
+tss_base		equ		0x9F100
+
+code_selector	equ		0x20
+data_selector	equ		0x28
+stack_selector	equ		0x28
+tss_selector	equ		0x30
 
 
 ;DATA --------------------------
@@ -260,9 +353,9 @@ numbuf				dd		0,0
 					db		0
 
 align 8
-gdt32
-	dw		0x1000 			; GDTR Limit
-	dd		0x0009FF00		; GDTR Base
+gdt
+	dw		0x0100 			; GDTR Limit
+	dd		gdt_base		; GDTR Base
 	dw		0x0000			; Fill
 
 times 3 	dd		0,0 			; Three zeroed entries
@@ -271,14 +364,14 @@ times 3 	dd		0,0 			; Three zeroed entries
 	db		0xFF,0xFF,0x00,0x00,0x00,0x92,0xCF,0x00 ;Data
 	;64-bit TSS descriptor
 	dw	0x68
-	dw 	0xFE00
-	db	0x09
+	dw 	tss_base & 0xFFFF 	;0xF100
+	db	tss_base & 0xFF0000	;0x09
 	db  10001001b
 	db	00000000b
 	db	0
 	dq	0
 
-gdt32_end
+gdt_end
 
 
 mem_map_entries			dw		0
