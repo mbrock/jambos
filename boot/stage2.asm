@@ -121,6 +121,9 @@ long_mode:
 .stop
 	jmp .stop
 
+
+[BITS 16]
+
 boot_error:
 	mov		si, boot_error_msg
 	call	print_msg
