@@ -1,8 +1,6 @@
 
 #include <terminal.hh>
 
-Terminal *console;
-
 extern "C" {
   void stage3 () {
     Terminal local_console(reinterpret_cast<u8_t*>(0xb8000));

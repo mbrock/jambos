@@ -1,5 +1,4 @@
 [BITS 16]
-[ORG 1000h]
 
 [SECTION .init]
 
@@ -59,16 +58,19 @@ jumpety:
 	rep		stosd
 
 ;PML4 table
-	mov		[pml4_base+4],  eax
-	mov		[pml4_base],    0x9C001
+	mov		ebx,		pml4_base
+	mov		[ebx+4],	eax
+	mov		[ebx],		dword 0x9C001
 
 ;PDP table
-	mov		[pdpt_base+4],  eax
-	mov		[pdpt_base],    0x9D001
+	mov		ebx,		pdpt_base
+	mov		[ebx+4],  	eax
+	mov		[ebx],		dword 0x9D001
 
 ;PD table
-	mov		[pd_base+4],    eax
-	mov		[pd_base],      0x9E001
+	mov		ebx,		pd_base
+	mov		[ebx+4],	eax
+	mov		[ebx],		dword 0x9E001
 
 ;Generate page table
 	
@@ -116,10 +118,13 @@ long_mode:
 	mov		ax,tss_selector
 	ltr		ax
 
-	;LET'S DO THIS THING!
 
-.stop
-	jmp .stop
+	;LET'S DO THIS THING!
+	extern	stage3
+	call	stage3
+
+;; .stop:
+;; 	jmp .stop
 
 
 [BITS 16]
@@ -128,7 +133,7 @@ boot_error:
 	mov		si, boot_error_msg
 	call	print_msg
 
-.stop
+.stop:
 	cli 
 	hlt
 	jmp .stop
@@ -356,7 +361,7 @@ numbuf				dd		0,0
 					db		0
 
 align 8
-gdt
+gdt:	
 	dw		0x0100 			; GDTR Limit
 	dd		gdt_base		; GDTR Base
 	dw		0x0000			; Fill
@@ -374,7 +379,7 @@ times 3 	dd		0,0 			; Three zeroed entries
 	db	0
 	dq	0
 
-gdt_end
+gdt_end:	
 
 
 mem_map_entries			dw		0
