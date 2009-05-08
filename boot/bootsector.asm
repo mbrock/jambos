@@ -4,36 +4,22 @@
 	jmp 0:start
 
 start:
-
 	push cs
 	pop ds
-
-	push 0B800h
-	pop gs
-
-	;clear screen
-	push gs
-	pop es
-	mov		cx,(80*50)/2
-	mov		ax,0700h
-	xor		di,di
-rep	stosw
-
-
-	;check floppy
 
 	stc
 	mov ah,41h
 	mov bx,55aah
 	mov dl,80h
 	int 13h
-	;jmp stop
-
+	
 	stc
 	mov ax,4200h
 	mov dx,80h
 	lea si,[dap]
 	int 13h
+
+	call clear
 
 	jmp 0x1000:0
 
@@ -41,9 +27,22 @@ rep	stosw
 dap:
 	db 16     ; size
 	db 0      ; reserved
-	dw 63     ; block count
+	dw 32     ; block count (16k)
 	dd 1000h  ; buffer
 	dq 1      ; block offset
 
-times 510-($-$$)	db	0
-Sig					dw	0AA55h
+; clear screen
+clear:
+	push 0B800h
+	pop gs
+	push gs
+	pop es
+	mov		cx,(80*50)/2
+	mov		ax,0700h
+	xor		di,di
+rep	stosw
+	ret
+
+; boot sector signature
+times 510-($-$$) db 0
+Sig              dw 0AA55h
