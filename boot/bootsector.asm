@@ -7,28 +7,21 @@ start:
 	push cs
 	pop ds
 
-	stc
-	mov ah,41h
-	mov bx,55aah
+	mov ah,42h
 	mov dl,80h
-	int 13h
-	
-	stc
-	mov ax,4200h
-	mov dx,80h
-	lea si,[dap]
+	mov si,dap
 	int 13h
 
 	call clear
 
-	jmp 0x1000:0
+	jmp 100h:0
 
 ; disk address packet for reading rest of first cylinder
 dap:
 	db 16     ; size
 	db 0      ; reserved
 	dw 32     ; block count (16k)
-	dd 1000h  ; buffer
+	dd 1000h  ; buffer offset
 	dq 1      ; block offset
 
 ; clear screen

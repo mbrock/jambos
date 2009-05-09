@@ -14,6 +14,8 @@ E820_ACPI				equ		03h
 E820_NVS				equ		04h
 
 start:
+	jmp start
+
 	call get_e820
 	
 	test ax,ax
@@ -120,11 +122,11 @@ long_mode:
 
 
 	;LET'S DO THIS THING!
-	extern	stage3
-	call	stage3
+	;; extern	stage3
+	;; call	stage3
 
-;; .stop:
-;; 	jmp .stop
+.stop:
+	jmp .stop
 
 
 [BITS 16]
