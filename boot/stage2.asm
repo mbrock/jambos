@@ -343,7 +343,7 @@ get_e820:
 
 ;EQU -------------------------
 
-stack64_base	equ		0x9B000
+stack64_base	equ		0x9A000
 
 pml4_base		equ		0x9B000
 pdpt_base		equ		0x9C000

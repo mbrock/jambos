@@ -32,7 +32,7 @@ inline void swap (T& a, T& b)
 
 inline void memset (void *dest,
                     char  c,
-                    u32_t size)
+                    size_t size)
 {
   char *d (static_cast <char *> (dest));
   while (size--)
