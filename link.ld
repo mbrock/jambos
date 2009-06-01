@@ -4,6 +4,7 @@ SECTIONS {
   .init : { *(.init)  }
   stage3_start = . ;
   .text : { *(.text) }
-  .data : { *(.data) *(.bss) }
+  .data : { *(.data) *(.rodata) *(.bss) }
+  /DISCARD/ : { *(.eh_frame .comment) }
   stage3_end = . ;
 }

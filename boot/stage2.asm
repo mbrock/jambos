@@ -1,6 +1,5 @@
 [BITS 16]
 
-[SECTION .init]
 
 STRUC mem_map
 	.base				resq	1	
@@ -13,8 +12,9 @@ E820_RESERVED			equ		02h
 E820_ACPI				equ		03h
 E820_NVS				equ		04h
 
+[SECTION .init]
+
 start:
-	jmp start
 
 	call get_e820
 	
@@ -28,7 +28,7 @@ e820ok:
 	
 	push	ds
 	push	gdt
-	push	0x9FF0
+	push	(gdt_base >> 4)
 	push	0
 	push	gdt_end-gdt
 	call	memcpy
@@ -39,7 +39,7 @@ e820ok:
 	cli
 
 	mov		eax,cr0
-	or		eax,11h
+	or		eax,1h
 	mov		cr0,eax
 
 	jmp		code_selector:jumpety
@@ -88,6 +88,10 @@ jumpety:
 	cmp		edi,0x9F000
 	jne		.pt_loop
 
+	;Fix GDT code selector for long mode
+	mov		eax,gdt_base+(gdt_patch-gdt)
+	mov		[eax],byte 10101111b
+
 	;Enable PAE
 	mov		eax,cr4
 	bts		eax,5
@@ -118,12 +122,13 @@ long_mode:
 
 	;tss setup
 	mov		ax,tss_selector
-	ltr		ax
+
+db	0x0f,0x00,0xC0
 
 
 	;LET'S DO THIS THING!
-	;; extern	stage3
-	;; call	stage3
+	extern	stage3
+	call	stage3
 
 .stop:
 	jmp .stop
@@ -370,8 +375,23 @@ gdt:
 
 times 3 	dd		0,0 			; Three zeroed entries
 
-	db		0xFF,0xFF,0x00,0x00,0x00,0x9A,0xAF,0x00 ;Code
-	db		0xFF,0xFF,0x00,0x00,0x00,0x92,0xCF,0x00 ;Data
+	;Code Segment
+	dw		0xFFFF		;Limit low word
+	dw		0x0000		;Base low word
+	db		0x00		;Base bits 16-23
+	db		10011010b	;Some flags
+gdt_patch: 
+	db		10001111b	;Limit bits 16-19, and some flags
+	db		0x00		;Base bits 24-31
+
+	;Data Segment
+	dw		0xFFFF		;Limit low word
+	dw		0x0000		;Base low word
+	db		0x00		;Base bits 16-23
+	db		10010010b	;Some flags
+	db		10001111b	;Limit bits 16-19, and some flags
+	db		0x00		;Base bits 24-31
+
 	;64-bit TSS descriptor
 	dw	0x68
 	dw 	tss_base & 0xFFFF 	;0xF100

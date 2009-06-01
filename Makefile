@@ -20,16 +20,17 @@ boot/bootsector.o: boot/bootsector.asm
 
 boot/stage3.o: boot/stage3.cpp $(STAGE3_OBJS)
 
-boot/boot.o: link.ld boot/stage2.o
-#	ld -melf_x86_64 -T link.ld $(BOOT_STAGES) $(STAGE3_OBJS) -o $@
-#	objcopy -O binary $@
-	cp boot/stage2.o boot/boot.o
+boot/boot.o: link.ld $(BOOT_STAGES)
+	ld -T link.ld $(BOOT_STAGES) $(STAGE3_OBJS) -o $@
+	cp boot/boot.o lala.o
+	objcopy -O binary $@
+#	cp boot/stage2.o boot/boot.o
 
 boot/bootsector.o: boot/bootsector.asm
 	nasm $< -o $@
 
 boot/stage2.o: boot/stage2.asm
-	nasm $< -o $@
+	nasm -f elf64 $< -o $@
 
 clean:
 	rm -f boot.img boot/*.o $(BOOT_STAGES) lib/*.o
