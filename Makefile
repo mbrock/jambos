@@ -6,6 +6,10 @@ STAGE3_OBJS = lib/static-string.o lib/terminal.o lib/printf.o
 
 BOOT_STAGES = boot/stage2.o boot/stage3.o
 
+ifdef XCOMPILE
+LDFLAGS += -m elf_x86_64
+endif
+
 all: boot.img
 
 run: boot.img
@@ -21,10 +25,9 @@ boot/bootsector.o: boot/bootsector.asm
 boot/stage3.o: boot/stage3.cpp $(STAGE3_OBJS)
 
 boot/boot.o: link.ld $(BOOT_STAGES)
-	ld -T link.ld $(BOOT_STAGES) $(STAGE3_OBJS) -o $@
+	ld -T link.ld $(LDFLAGS) $(BOOT_STAGES) $(STAGE3_OBJS) -o $@
 	cp boot/boot.o lala.o
 	objcopy -O binary $@
-#	cp boot/stage2.o boot/boot.o
 
 boot/bootsector.o: boot/bootsector.asm
 	nasm $< -o $@

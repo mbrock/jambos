@@ -52,10 +52,10 @@ StaticString::add (u64_t x, int radix)
 
   do
     {
-      int r (x & 0xf);
+      int r (x % radix);
       tmp.add ((r < 10) ? r + '0' : r + 'a' - 10);
     }
-  while (x >>= 4);
+  while (x /= radix);
 
   tmp.reverse ();
   add (tmp);

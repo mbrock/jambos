@@ -1,6 +1,5 @@
 [BITS 16]
 
-
 STRUC mem_map
 	.base				resq	1	
 	.length				resq	1
@@ -127,6 +126,9 @@ db	0x0f,0x00,0xC0
 
 
 	;LET'S DO THIS THING!
+	push	mem_map_entries
+	push	memory_map
+	
 	extern	stage3
 	call	stage3
 
@@ -305,7 +307,7 @@ get_e820:
 	cmp 	eax,534D4150h 
 	jne		.no_support
 
-	inc		word [mem_map_entries]
+	inc		word [mem_map_entries] 
 
 	add		di,20
 	cmp		word [mem_map_entries],32
@@ -403,6 +405,8 @@ gdt_patch:
 
 gdt_end:	
 
+	global bootinfo
+bootinfo:
 
 mem_map_entries			dw		0
 
@@ -414,3 +418,4 @@ istruc mem_map
 	at	mem_map.type,				dd	0
 iend
 %endrep
+

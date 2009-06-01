@@ -53,7 +53,7 @@ ksprintf (StaticString &output,
               buffer.clear ();
             }
 
-	  if (c == 'X' || c == 'P')
+	  if (c == 'X' || c == 'P' || c == 'D')
 	    {
 	      u64_t number (va_arg (argp, u64_t));
               int radix  ((c == 'D' ? 10 : 16));
