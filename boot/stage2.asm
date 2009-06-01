@@ -350,9 +350,9 @@ pdpt_base		equ		0x9C000
 pd_base			equ		0x9D000
 pagetbl_base	equ		0x9E000
 
-gdt_base		equ		0x9F000
+gdt_base		equ		0x9A000
 
-tss_base		equ		0x9F100
+tss_base		equ		0x9A100
 
 code_selector	equ		0x20
 data_selector	equ		0x28
