@@ -16,7 +16,9 @@ void stage3 () {
 	console->set_modeline("JAMBOS 0.1 (with %d bit long type!)", 8 * sizeof (long));
 
 	kprintf("Memory map (%d entries):\n", (int) bootinfo.memory_map_entries);
-	PagingEntry *entry = 10 * 1024 * 1024;
+
+	//PagingEntry *entry = 10 * 1024 * 1024;
+
 	for (int i = 0; i < bootinfo.memory_map_entries; i++) {
 		kprintf("  Type %d (%P + %D KB)\n",
 				bootinfo.memory_map[i].type,
@@ -24,8 +26,9 @@ void stage3 () {
 				bootinfo.memory_map[i].length / 1024);
 	}
 
-	for (;;)
+	for (;;) {
 		__asm__ ("hlt");
+    }
 }
 
 }
@@ -38,9 +41,10 @@ void paging_init() {
 
 	memset(reinterpret_cast<void*>(0x100000), 0, 0x2000);
 
-	*pml4 = PagingEntry(0x101000, 1, false);
-	*pml3 = PagingEntry(0x102000, 1, false);
+	*pml4 = PagingEntry(reinterpret_cast<void*>(0x101000), 1, false);
+	*pml3 = PagingEntry(reinterpret_cast<void*>(0x102000), 1, false);
 
+    /*
 	MemoryMapEntry &mme = bootinfo.memory_map[bootinfo.memory_map_entries];
 
 	u8_t *last_addr = reinterpret_cast<u8_t*>(mme.base + mme.length);
@@ -49,7 +53,8 @@ void paging_init() {
 
 	PagingEntry *page_dir_entry = reinterpret_cast<PagingEntry*>(0x100000 + 0x2000);
 	PagingEntry *page_table_entry = reinterpret_cast<PagingEntry*>(0x100000 );
-
+    */
+    
 	for (;;) {
 		
 	}
