@@ -1,6 +1,7 @@
 
 CXXFLAGS = -nostdlib -fno-builtin -fno-rtti -fno-exceptions \
-           -fno-stack-protector -W -Wall -m64 -Iinclude
+           -fno-stack-protector -W -Wall -m64 -Iinclude \
+           -std=c++11
 
 STAGE3_OBJS = lib/static-string.o lib/terminal.o lib/printf.o
 
