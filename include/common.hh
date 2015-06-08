@@ -2,6 +2,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <cstdlib>
+
 #define __STRINGIFY(x) #x
 #define STRINGIFY(x) __STRINGIFY(x)
 
